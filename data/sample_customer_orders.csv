@@ -1,0 +1,19 @@
+date,customer,region,orders,revenue
+2025-01-03,Acme Corp,East,8,3200
+2025-01-14,BlueSky Ltd,West,5,2100
+2025-01-26,Core Retail,South,11,3850
+2025-02-05,Acme Corp,East,9,3600
+2025-02-17,BlueSky Ltd,West,7,2940
+2025-02-25,Delta Stores,North,6,2580
+2025-03-06,Core Retail,South,13,4550
+2025-03-18,Delta Stores,North,8,3440
+2025-03-29,Acme Corp,East,10,4000
+2025-04-04,BlueSky Ltd,West,9,3780
+2025-04-16,Core Retail,South,12,4200
+2025-04-27,Delta Stores,North,10,4300
+2025-05-07,Acme Corp,East,12,4800
+2025-05-19,BlueSky Ltd,West,11,4620
+2025-05-28,Core Retail,South,15,5250
+2025-06-09,Delta Stores,North,13,5590
+2025-06-18,Acme Corp,East,14,5600
+2025-06-28,BlueSky Ltd,West,12,5040
