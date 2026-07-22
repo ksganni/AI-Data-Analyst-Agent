@@ -2,6 +2,8 @@
 
 A data-analysis application for structured business datasets. The system ingests CSV and Excel files, classifies analytical queries through deterministic keyword rules, executes predefined Pandas and NumPy operations, generates Plotly visualizations, and presents computed results. Google Gemini provides optional explanatory synthesis.
 
+**Live application:** [https://ai-data-analyst-ui.onrender.com/](https://ai-data-analyst-ui.onrender.com/)
+
 ## Problem
 
 Business analysis frequently depends on manual spreadsheet operations, predefined dashboards, or direct support from data specialists. Conventional dashboards are limited to metrics and views anticipated during development, while ad hoc investigation requires technical proficiency and additional operational effort.
@@ -20,6 +22,18 @@ This project implements a structured data-analysis workflow:
 8. Streamlit displays the result, visualization, and workflow steps.
 
 Language-model integration is separated from numerical computation. Pandas and NumPy produce the analytical results, while Gemini receives structured outputs for explanatory synthesis. Quota exhaustion or service unavailability triggers a deterministic local fallback.
+
+## Methodological Approach
+
+The system follows a hybrid analytical architecture that prioritizes computational reliability over unconstrained language-model reasoning:
+
+- **Deterministic computation.** Ranking, aggregation, trend estimation, and descriptive statistics are performed exclusively with Pandas and NumPy. Numerical outputs are therefore reproducible for a given dataset and query class.
+- **Constrained query classification.** Natural-language inputs are mapped to a finite set of analytical operations through keyword rules, reducing ambiguous tool selection and unsupported transformations.
+- **Separation of concerns.** The language model is used only for post-hoc explanatory synthesis of structured results. It does not invent metrics, rewrite intermediate tables, or replace the numerical pipeline.
+- **Graceful degradation.** When Gemini is unavailable or rate-limited, the application returns the locally computed analytical result without interrupting the workflow.
+- **Observable execution.** Each request records the sequence of workflow nodes, enabling inspection of classification, computation, visualization, and explanation stages.
+
+This design is appropriate for instructional and demonstration settings in which analytical transparency and reproducible numeric outputs are required.
 
 ## Included Sample Datasets
 
@@ -171,8 +185,8 @@ ai-data-analyst-agent/
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/ai-data-analyst-agent.git
-cd ai-data-analyst-agent
+git clone https://github.com/ksganni/AI-Data-Analyst-Agent.git
+cd AI-Data-Analyst-Agent
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
@@ -305,14 +319,19 @@ The workflow in `.github/workflows/ci.yml` runs on pull requests and pushes to a
 
 ## Deployment
 
-`render.yaml` defines separate Render services for the FastAPI backend and Streamlit frontend.
+The application is deployed on Render as two coordinated web services defined in `render.yaml`:
+
+- Streamlit interface: [https://ai-data-analyst-ui.onrender.com/](https://ai-data-analyst-ui.onrender.com/)
+- FastAPI backend health endpoint: `https://ai-data-analyst-api-endl.onrender.com/health`
+
+Free-tier instances may suspend after inactivity; the first request after idle periods can therefore incur additional startup latency.
 
 Required hosted environment variables:
 
 ```env
 GEMINI_API_KEY=your-gemini-key
 GEMINI_MODEL=gemini-2.0-flash
-API_URL=https://your-api-service.onrender.com
+API_URL=https://ai-data-analyst-api-endl.onrender.com
 ```
 
 The `.env` file is excluded by `.gitignore` and must not be committed to version control.
