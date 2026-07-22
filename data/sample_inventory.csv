@@ -1,0 +1,19 @@
+date,product,category,region,units,revenue
+2025-01-04,Laptop Pro,Electronics,East,6,7200
+2025-01-13,Office Chair,Furniture,West,14,2800
+2025-01-24,Desk Lamp,Accessories,South,22,1320
+2025-02-06,Laptop Pro,Electronics,North,8,9600
+2025-02-15,Office Chair,Furniture,East,16,3200
+2025-02-26,Desk Lamp,Accessories,West,25,1500
+2025-03-05,Laptop Air,Electronics,South,10,9000
+2025-03-17,Standing Desk,Furniture,North,9,4050
+2025-03-28,Wireless Mouse,Accessories,East,35,1750
+2025-04-03,Laptop Air,Electronics,West,12,10800
+2025-04-14,Standing Desk,Furniture,South,11,4950
+2025-04-25,Wireless Mouse,Accessories,North,40,2000
+2025-05-08,Laptop Pro,Electronics,East,9,10800
+2025-05-19,Office Chair,Furniture,West,20,4000
+2025-05-30,Desk Lamp,Accessories,South,31,1860
+2025-06-07,Laptop Air,Electronics,North,14,12600
+2025-06-18,Standing Desk,Furniture,East,13,5850
+2025-06-27,Wireless Mouse,Accessories,West,48,2400
