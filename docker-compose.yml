@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8010
+    ports:
+      - "8010:8010"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+
+  ui:
+    build: .
+    command: streamlit run frontend/streamlit_app.py --server.port 8510 --server.address 0.0.0.0
+    ports:
+      - "8510:8510"
+    environment:
+      API_URL: http://api:8010
+    depends_on:
+      - api
