@@ -4,6 +4,10 @@ A data-analysis application for structured business datasets. The system ingests
 
 **Live application:** [https://ai-data-analyst-ui.onrender.com/](https://ai-data-analyst-ui.onrender.com/)
 
+**Recorded demonstration:** [https://youtu.be/LLO1I3NHO_c](https://youtu.be/LLO1I3NHO_c)
+
+The hosted deployment runs on a free-tier instance that suspends after inactivity and may require up to a minute to resume. The recorded demonstration presents the full analytical workflow if the live application is unavailable.
+
 ## Problem
 
 Business analysis frequently depends on manual spreadsheet operations, predefined dashboards, or direct support from data specialists. Conventional dashboards are limited to metrics and views anticipated during development, while ad hoc investigation requires technical proficiency and additional operational effort.
