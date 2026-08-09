@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import time
 from pathlib import Path
 
 import httpx
@@ -11,6 +12,12 @@ import streamlit as st
 
 API_URL = os.getenv("API_URL", "http://localhost:8010")
 ROOT_DIR = Path(__file__).resolve().parents[1]
+
+# Hosted free-tier instances suspend when idle and reject early requests with a
+# gateway error while the container boots.
+COLD_START_STATUS_CODES = {502, 503, 504}
+WAKE_TIMEOUT_SECONDS = 120.0
+REQUEST_ATTEMPTS = 4
 
 SAMPLE_DATASETS = {
     "Sales": {
@@ -375,14 +382,55 @@ def clear_chat() -> None:
     st.session_state.messages = []
 
 
+def wake_api(timeout: float = WAKE_TIMEOUT_SECONDS) -> bool:
+    """Poll the health endpoint until the backend accepts requests."""
+    deadline = time.monotonic() + timeout
+    delay = 2.0
+    while True:
+        try:
+            response = httpx.get(f"{API_URL}/health", timeout=30.0)
+            if response.status_code not in COLD_START_STATUS_CODES:
+                response.raise_for_status()
+                return True
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            pass
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(min(delay, max(0.0, deadline - time.monotonic())))
+        delay = min(delay * 2, 15.0)
+
+
+def request_with_retry(method: str, path: str, **kwargs) -> httpx.Response:
+    """Send a request, retrying while the backend is still starting up."""
+    last_error: Exception | None = None
+    for attempt in range(REQUEST_ATTEMPTS):
+        try:
+            response = httpx.request(method, f"{API_URL}{path}", **kwargs)
+            if response.status_code not in COLD_START_STATUS_CODES:
+                response.raise_for_status()
+                return response
+            last_error = httpx.HTTPStatusError(
+                f"Backend returned {response.status_code} while starting up.",
+                request=response.request,
+                response=response,
+            )
+        except httpx.RequestError as exc:
+            last_error = exc
+
+        if attempt < REQUEST_ATTEMPTS - 1:
+            wake_api()
+
+    raise last_error if last_error else RuntimeError("Request failed.")
+
+
 def upload_dataset(filename: str, content: bytes, questions: list[str]) -> None:
     """Upload a chosen file to FastAPI and reset the chat for the new dataset."""
-    response = httpx.post(
-        f"{API_URL}/upload",
+    response = request_with_retry(
+        "POST",
+        "/upload",
         files={"file": (filename, content)},
-        timeout=60.0,
+        timeout=120.0,
     )
-    response.raise_for_status()
     data = response.json()
     st.session_state.session_id = data["session_id"]
     st.session_state.summary = data["summary"]
@@ -431,12 +479,11 @@ with st.sidebar:
     st.markdown("### API status")
     st.caption(f"Endpoint: {API_URL}")
     if st.button("Verify API connection", use_container_width=True):
-        try:
-            health = httpx.get(f"{API_URL}/health", timeout=10.0)
-            health.raise_for_status()
-            st.success("API is reachable")
-        except Exception as exc:  # noqa: BLE001
-            st.error(f"API is not reachable: {exc}")
+        with st.spinner("Contacting the backend..."):
+            if wake_api():
+                st.success("API is reachable")
+            else:
+                st.error("API is not reachable")
 
 
 # Header and introduction
@@ -580,15 +627,15 @@ if question and st.session_state.session_id:
     st.session_state.messages.append({"role": "user", "content": question})
     try:
         with st.spinner("Running analysis..."):
-            response = httpx.post(
-                f"{API_URL}/ask",
+            response = request_with_retry(
+                "POST",
+                "/ask",
                 json={
                     "session_id": st.session_state.session_id,
                     "question": question,
                 },
                 timeout=120.0,
             )
-            response.raise_for_status()
             data = response.json()
             chart_json = None
             if data.get("chart") and data["chart"].get("plotly_json"):
